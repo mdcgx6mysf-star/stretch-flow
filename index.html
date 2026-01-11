@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stretch Flow</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+}
+header {
+  background: #000;
+  color: #fff;
+  padding: 18px;
+  text-align: center;
+  font-size: 22px;
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 16px;
+}
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+button {
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+  border-radius: 14px;
+  border: none;
+  background: #000;
+  color: #fff;
+  margin-top: 10px;
+}
+button.secondary {
+  background: #666;
+}
+h2 {
+  margin-top: 0;
+}
+.timer {
+  font-size: 42px;
+  text-align: center;
+  margin-top: 12px;
+}
+.svg-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+}
+.hidden {
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<header>Stretch Flow</header>
+
+<div class="container">
+
+<div id="zoneSelect" class="card">
+  <h2>Select Area</h2>
+  <button onclick="showZone('upper')">Upper Body</button>
+  <button onclick="showZone('lower')">Lower Body</button>
+</div>
+
+<div id="stretchList" class="hidden"></div>
+
+</div>
+
+<script>
+let timerInterval;
+let timeLeft = 30;
+
+// 🔔 Audible tone function
+function playBeep() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(880, ctx.currentTime); // pitch
+  gain.gain.setValueAtTime(0.25, ctx.currentTime); // volume
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.start();
+  oscillator.stop(ctx.currentTime + 0.35); // duration
+}
+
+const stretches = {
+  upper: [
+    "Neck Side Stretch",
+    "Neck Rotation Stretch",
+    "Upper Trapezius Stretch",
+    "Levator Scapulae Stretch",
+    "Chest Opener",
+    "Doorway Chest Stretch",
+    "Overhead Triceps Stretch",
+    "Cross-Body Shoulder Stretch",
+    "Shoulder External Rotation Stretch",
+    "Lat Overhead Stretch",
+    "Upper Back Hug Stretch",
+    "Wrist Flexor Stretch",
+    "Wrist Extensor Stretch",
+    "Forearm Pronation Stretch",
+    "Forearm Supination Stretch",
+    "Standing Side Bend Stretch"
+  ],
+  lower: [
+    "Standing Hamstring Stretch",
+    "Seated Hamstring Stretch",
+    "Hip Flexor Lunge Stretch",
+    "Quad Stretch",
+    "Figure-4 Glute Stretch",
+    "Piriformis Stretch",
+    "Adductor Stretch",
+    "Butterfly Stretch",
+    "Calf Gastrocnemius Stretch",
+    "Soleus Stretch",
+    "IT Band Stretch",
+    "Standing Hip Hinge Stretch",
+    "Kneeling Quad Stretch",
+    "Hip External Rotation Stretch",
+    "Deep Squat Hold",
+    "Ankle Dorsiflexion Stretch"
+  ]
+};
+
+function showZone(zone) {
+  document.getElementById("zoneSelect").classList.add("hidden");
+  const list = document.getElementById("stretchList");
+  list.innerHTML = "";
+  list.classList.remove("hidden");
+
+  stretches[zone].forEach(name => {
+    const safeId = name.replace(/\s/g, "");
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h2>${name}</h2>
+      <div class="svg-wrap">${svgFigure()}</div>
+      <div class="timer" id="timer-${safeId}">30</div>
+      <button onclick="startTimer('timer-${safeId}')">Start 30s</button>
+    `;
+    list.appendChild(card);
+  });
+
+  const back = document.createElement("button");
+  back.textContent = "← Back";
+  back.className = "secondary";
+  back.onclick = reset;
+  list.appendChild(back);
+}
+
+function startTimer(id) {
+  clearInterval(timerInterval);
+  timeLeft = 30;
+  const display = document.getElementById(id);
+  display.textContent = timeLeft;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    display.textContent = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      display.textContent = "Done";
+      navigator.vibrate && navigator.vibrate(200);
+      playBeep();
+    }
+  }, 1000);
+}
+
+function reset() {
+  document.getElementById("stretchList").classList.add("hidden");
+  document.getElementById("zoneSelect").classList.remove("hidden");
+}
+
+function svgFigure() {
+  return `
+  <svg width="120" height="180" viewBox="0 0 120 180">
+    <circle cx="60" cy="20" r="10" fill="#000"/>
+    <line x1="60" y1="30" x2="60" y2="90" stroke="#000" stroke-width="4"/>
+    <line x1="60" y1="50" x2="30" y2="70" stroke="#000" stroke-width="4"/>
+    <line x1="60" y1="50" x2="90" y2="70" stroke="#000" stroke-width="4"/>
+    <line x1="60" y1="90" x2="40" y2="140" stroke="#000" stroke-width="4"/>
+    <line x1="60" y1="90" x2="80" y2="140" stroke="#000" stroke-width="4"/>
+  </svg>`;
+}
+</script>
+
+</body>
+</html>
