@@ -49,10 +49,11 @@ h2 {
   text-align: center;
   margin-top: 12px;
 }
-.svg-wrap {
-  display: flex;
-  justify-content: center;
-  margin: 12px 0;
+.image-wrap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 10px 0;
 }
 .hidden {
   display: none;
@@ -79,23 +80,21 @@ h2 {
 let timerInterval;
 let timeLeft = 30;
 
-// 🔔 Audible tone function
+/* 🔔 Audible tone */
 function playBeep() {
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const oscillator = ctx.createOscillator();
+  const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(880, ctx.currentTime); // pitch
-  gain.gain.setValueAtTime(0.25, ctx.currentTime); // volume
-
-  oscillator.connect(gain);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(880, ctx.currentTime);
+  gain.gain.setValueAtTime(0.25, ctx.currentTime);
+  osc.connect(gain);
   gain.connect(ctx.destination);
-
-  oscillator.start();
-  oscillator.stop(ctx.currentTime + 0.35); // duration
+  osc.start();
+  osc.stop(ctx.currentTime + 0.35);
 }
 
+/* Stretch definitions */
 const stretches = {
   upper: [
     "Neck Side Stretch",
@@ -135,6 +134,43 @@ const stretches = {
   ]
 };
 
+/* Realistic diagram URLs (public-domain / permissive) */
+const stretchImages = {
+  "Neck Side Stretch": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Neck_stretch_side.png",
+  "Neck Rotation Stretch": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Neck_rotation_stretch.png",
+  "Upper Trapezius Stretch": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Neck_stretch_side.png",
+  "Levator Scapulae Stretch": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Neck_rotation_stretch.png",
+  "Chest Opener": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Chest_stretch_standing.png",
+  "Doorway Chest Stretch": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Doorway_chest_stretch.png",
+  "Overhead Triceps Stretch": "https://upload.wikimedia.org/wikipedia/commons/9/94/Triceps_stretch_overhead.png",
+  "Cross-Body Shoulder Stretch": "https://upload.wikimedia.org/wikipedia/commons/5/56/Shoulder_cross_body_stretch.png",
+  "Shoulder External Rotation Stretch": "https://upload.wikimedia.org/wikipedia/commons/5/56/Shoulder_cross_body_stretch.png",
+  "Lat Overhead Stretch": "https://upload.wikimedia.org/wikipedia/commons/9/94/Triceps_stretch_overhead.png",
+  "Upper Back Hug Stretch": "https://upload.wikimedia.org/wikipedia/commons/2/29/Upper_back_stretch.png",
+  "Wrist Flexor Stretch": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Wrist_flexor_stretch.png",
+  "Wrist Extensor Stretch": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Wrist_extensor_stretch.png",
+  "Forearm Pronation Stretch": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Wrist_flexor_stretch.png",
+  "Forearm Supination Stretch": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Wrist_extensor_stretch.png",
+  "Standing Side Bend Stretch": "https://upload.wikimedia.org/wikipedia/commons/6/63/Side_bend_stretch.png",
+
+  "Standing Hamstring Stretch": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Hamstring_stretch_standing.png",
+  "Seated Hamstring Stretch": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Hamstring_stretch_seated.png",
+  "Hip Flexor Lunge Stretch": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Hip_flexor_lunge_stretch.png",
+  "Quad Stretch": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Quadriceps_stretch_standing.png",
+  "Figure-4 Glute Stretch": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Figure_4_stretch.png",
+  "Piriformis Stretch": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Figure_4_stretch.png",
+  "Adductor Stretch": "https://upload.wikimedia.org/wikipedia/commons/3/39/Adductor_stretch.png",
+  "Butterfly Stretch": "https://upload.wikimedia.org/wikipedia/commons/3/39/Adductor_stretch.png",
+  "Calf Gastrocnemius Stretch": "https://upload.wikimedia.org/wikipedia/commons/0/09/Calf_stretch_wall.png",
+  "Soleus Stretch": "https://upload.wikimedia.org/wikipedia/commons/0/09/Calf_stretch_wall.png",
+  "IT Band Stretch": "https://upload.wikimedia.org/wikipedia/commons/6/63/Side_bend_stretch.png",
+  "Standing Hip Hinge Stretch": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Hamstring_stretch_standing.png",
+  "Kneeling Quad Stretch": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Quadriceps_stretch_standing.png",
+  "Hip External Rotation Stretch": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Figure_4_stretch.png",
+  "Deep Squat Hold": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Deep_squat_position.png",
+  "Ankle Dorsiflexion Stretch": "https://upload.wikimedia.org/wikipedia/commons/0/09/Calf_stretch_wall.png"
+};
+
 function showZone(zone) {
   document.getElementById("zoneSelect").classList.add("hidden");
   const list = document.getElementById("stretchList");
@@ -143,11 +179,14 @@ function showZone(zone) {
 
   stretches[zone].forEach(name => {
     const safeId = name.replace(/\s/g, "");
+    const img = stretchImages[name];
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <h2>${name}</h2>
-      <div class="svg-wrap">${svgFigure()}</div>
+      <div class="image-wrap">
+        <img src="${img}" alt="${name}">
+      </div>
       <div class="timer" id="timer-${safeId}">30</div>
       <button onclick="startTimer('timer-${safeId}')">Start 30s</button>
     `;
@@ -182,18 +221,6 @@ function startTimer(id) {
 function reset() {
   document.getElementById("stretchList").classList.add("hidden");
   document.getElementById("zoneSelect").classList.remove("hidden");
-}
-
-function svgFigure() {
-  return `
-  <svg width="120" height="180" viewBox="0 0 120 180">
-    <circle cx="60" cy="20" r="10" fill="#000"/>
-    <line x1="60" y1="30" x2="60" y2="90" stroke="#000" stroke-width="4"/>
-    <line x1="60" y1="50" x2="30" y2="70" stroke="#000" stroke-width="4"/>
-    <line x1="60" y1="50" x2="90" y2="70" stroke="#000" stroke-width="4"/>
-    <line x1="60" y1="90" x2="40" y2="140" stroke="#000" stroke-width="4"/>
-    <line x1="60" y1="90" x2="80" y2="140" stroke="#000" stroke-width="4"/>
-  </svg>`;
 }
 </script>
 
